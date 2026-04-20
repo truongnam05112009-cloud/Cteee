@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Love Quiz</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Arial;
+    background: linear-gradient(135deg,#ffe4ec,#ffd6e7);
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    transition:0.6s;
+    overflow:hidden;
+}
+
+/* glow */
+body::before, body::after{
+    content:"";
+    position:fixed;
+    width:300px;height:300px;
+    filter:blur(80px);
+    z-index:0;
+}
+body::before{
+    background:#ff9ecb;
+    top:20%;left:20%;
+}
+body::after{
+    background:#ffb6d9;
+    bottom:20%;right:20%;
+}
+
+/* snow */
+#snow{
+    position:fixed;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+}
+.snowflake{
+    position:absolute;
+    color:white;
+    animation:fall linear;
+}
+@keyframes fall{
+    to{transform:translateY(100vh);}
+}
+
+/* layout */
+.wrap{
+    display:flex;
+    gap:20px;
+    align-items:center;
+    z-index:1;
+}
+
+/* character */
+.character{
+    width:120px;
+    text-align:center;
+    animation: float 2s infinite;
+}
+.character img{
+    width:100%;
+    border-radius:20px;
+}
+@keyframes float{
+    50%{transform:translateY(-10px);}
+}
+
+/* card */
+.card{
+    width:420px;
+    background:rgba(255,255,255,0.6);
+    backdrop-filter: blur(10px);
+    padding:20px;
+    border-radius:20px;
+}
+
+/* buttons */
+button{
+    width:100%;
+    margin:6px 0;
+    padding:12px;
+    border:none;
+    border-radius:12px;
+    cursor:pointer;
+    background:#ffffffaa;
+}
+
+button:hover{
+    transform:scale(1.03);
+}
+
+/* hint */
+#hint{
+    font-size:13px;
+    display:none;
+}
+
+/* letter */
+#letterScreen{
+    display:none;
+    position:fixed;
+    top:0;left:0;
+    width:100%;height:100%;
+    background:rgba(0,0,0,0.9);
+    color:white;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+}
+</style>
+</head>
+
+<body>
+
+<div id="snow"></div>
+
+<div class="wrap">
+
+<div class="character">
+    <img src="https://i.imgur.com/3ZQ3ZQW.png">
+    <button onclick="showHint()">💡 Gợi ý</button>
+    <button onclick="toggleMusic()">🎵</button>
+    <div id="hint"></div>
+</div>
+
+<div class="card">
+    <h2 id="q"></h2>
+    <div id="ans"></div>
+</div>
+
+</div>
+
+<div id="letterScreen">
+    <div onclick="openLetter()" style="border:2px solid white;padding:20px;border-radius:10px;cursor:pointer">
+        💌 Tap để mở
+    </div>
+    <h1 id="msg" style="display:none">💖 vk anh bá nhất tgioi !!! 💖</h1>
+</div>
+
+<script>
+
+// âm thanh
+const nextSound = new Audio("https://www.soundjay.com/buttons/sounds/button-16.mp3");
+const bgMusic = new Audio("https://www.bensound.com/bensound-music/bensound-sunny.mp3");
+const endMusic = new Audio("https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3");
+
+bgMusic.loop = true;
+bgMusic.volume = 0.4;
+
+// quiz
+const quiz = [
+{q:"Người đó thích làm gì lúc rảnh?",a:["Nghe nhạc","Chơi game","Xem phim","Lướt mạng"],hint:"Xem story 📱"},
+{q:"Gu nhạc?",a:["Ballad","Rap","Lofi","EDM"],hint:"Caption buồn 😏"},
+{q:"Thích động vật?",a:["Chó","Mèo","Cả hai","Không rõ"],hint:"Avatar 🐶"},
+{q:"Thích đi đâu?",a:["Ở nhà","Đi chơi","Du lịch","Cafe"],hint:"Check-in 📍"},
+{q:"Gu ăn uống?",a:["Ngọt","Mặn","Ăn vặt","Gì cũng ăn"],hint:"Story đồ ăn 🍜"},
+{q:"Hay dùng mạng gì?",a:["FB","TikTok","IG","Tất cả"],hint:"Online 👀"}
+];
+
+let i=0;
+
+function changeBG(i){
+    const bg=[
+        "#ffe4ec","#ffd6f0","#d6f0ff","#fff0d6","#ffd6d6","#e0d6ff"
+    ];
+    document.body.style.background=bg[i%bg.length];
+}
+
+function load(){
+    if(i>=quiz.length){
+        endMusic.play();
+        setTimeout(()=>{
+            document.getElementById("letterScreen").style.display="flex";
+        },1000);
+        return;
+    }
+
+    changeBG(i);
+
+    let q=quiz[i];
+    document.getElementById("q").innerText=q.q;
+
+    let box=document.getElementById("ans");
+    box.innerHTML="";
+
+    q.a.forEach(x=>{
+        let b=document.createElement("button");
+        b.innerText=x;
+
+        b.onclick=()=>{
+            nextSound.play();
+            i++;
+            document.getElementById("hint").style.display="none";
+            load();
+        };
+
+        box.appendChild(b);
+    });
+
+    bgMusic.play().catch(()=>{});
+}
+
+function showHint(){
+    let h=quiz[i].hint;
+    let box=document.getElementById("hint");
+    box.style.display="block";
+    box.innerText="🤖 "+h;
+}
+
+function toggleMusic(){
+    if(bgMusic.paused) bgMusic.play();
+    else bgMusic.pause();
+}
+
+function openLetter(){
+    document.querySelector("#letterScreen div").style.display="none";
+    document.getElementById("msg").style.display="block";
+}
+
+// snow
+setInterval(()=>{
+    let flake=document.createElement("div");
+    flake.className="snowflake";
+    flake.innerText="❄";
+    flake.style.left=Math.random()*100+"%";
+    flake.style.fontSize=(10+Math.random()*10)+"px";
+    flake.style.animationDuration=(3+Math.random()*3)+"s";
+
+    document.getElementById("snow").appendChild(flake);
+
+    setTimeout(()=>flake.remove(),6000);
+},200);
+
+load();
+</script>
+
+</body>
+                                                                    </html>
